@@ -1,0 +1,20 @@
+#!/usr/bin/python
+# External module imports
+import time
+import sys
+
+# Servod started with /usr/local/sbin/servod --p1pins=8,10,12,16 --cycle-time=20000
+leds = {"GRN":[0], "RED":[1], "BLU":[2], "WHT":[3] , "MAG":[1,2], "YEL":[0,1], "CYN":[0,2]}
+
+blaster = open("/dev/servoblaster", "w")
+which = sys.argv[1]
+brt = int(sys.argv[2]) - 1
+if brt == -1:
+    dc = '0\n'
+else:
+    dc =  str(brt) + '%\n'
+for l in leds[which]:
+    command = str(l) + '=' + dc
+    blaster.write(command)
+#    print command
+blaster.close()
