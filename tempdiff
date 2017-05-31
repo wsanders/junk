@@ -1,4 +1,10 @@
 #!/usr/bin/python
+# This script controls a LED's color and shows how to use the 
+# astral library to control the LED's brightness depending on
+# the position of the sun.
+# The color is set depending on the outdoor temperature, in 
+# this case retrieved with the ancient but still functional 
+# wx200 package connected to my WMR 968 weather station.
 import subprocess
 import astral 
 import datetime
