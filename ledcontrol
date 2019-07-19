@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# External module imports
+# Servod works really well to control LEDS
 import time
 import sys
 
