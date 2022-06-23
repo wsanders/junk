@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# NOTE - This is really old. On older pi's these days, pigpio is probably easier for you. Software PWN
+# will not destroy builtin audio, which uses hardware PWM on pin 18 (and maybe more)
 # Servod works really well to control LEDS
 import time
 import sys
