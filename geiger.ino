@@ -15,6 +15,8 @@ volatile long buf[n];
 volatile int led=0;
 volatile bool triggered=false;
 const int maxcpm=100;
+unsigned long printtimer=0;
+int printlast=0;
 
 
 void setup() {
@@ -31,18 +33,21 @@ void setup() {
 
 void loop() {
     long avg, cpm;
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        if (buf[pos] != -1 && triggered) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {   
+        if (buf[pos] != -1i && triggered) {
             // ms between pulses
             avg = (buf[pos>0 ? pos-1 : n-1] - buf[pos]) / (n -1);
             cpm = min(maxcpm, 60000 / avg);
             analogWrite(meter_pin, map(cpm,0,maxcpm,0,255));
             triggered = false;
-            // printbuffer();
-            Serial.print(cpm);
-            Serial.print("\t");
-            Serial.println(avg);
         }
+    }
+    if ((millis()- printtimer)  > 10000) {
+            printbuffer();
+            Serial.print(avg);
+            Serial.print("\t");
+            Serial.println(cpm);
+            printtimer = millis();
     }
 }
 
