@@ -1,18 +1,29 @@
 #!/usr/bin/python3
-import pigpio
-import datetime
-import sys
-from astral import sun
-from astral import LocationInfo
-
-
-# LED Control with auto twilight dimming.
+# LED Control with auto twilight dimming. Requires pigpio
 # Does not save state, just call again every 1/2 hour or so to update brightness
-# This version doesn't trash builtin audio by nuking hardware PWM. Doesn't put an unreasonable load
-# on pigpiod, 10% or so on ancient B rev 2.
+# This version doesn't trash builtin audio by nuking hardware PWM.
+# Doesn't put an unreasonable load on pigpiod, 10% or so on ancient B rev 2.
 # color to pins from a custom led board I built
 # A tad slow because of the bulk of astral
 
+# Requires Astral *1*
+# Had to redo because for some inexplicable reason Raspbian 11's Python3
+# packaging still supplies Astral version 1. See previous
+# version for Astral version 3 calls, which was what shipped with Raspbian 10.
+
+import pigpio
+import sys
+from astral import *
+from datetime import datetime
+import pytz
+
+mytz = pytz.timezone('America/Los_Angeles')
+mylocation = "San Francisco"
+
+# LED Control with auto twilight dimming. 
+# Does not save state, just call again every hour or so
+
+# color to pins from my board
 colors = {
     "green" : 14,
     "red" : 15,
@@ -22,25 +33,32 @@ colors = {
 # actually use this a multiplier to turn led on off
 onoff = { 'on' : 1.0, 'off' : 0.0 }
 
-
 color = sys.argv[1]
 ledstate = sys.argv[2]
 pin = colors[color]
 print (color, ledstate, pin)
 
 pipins=pigpio.pi()
-city = LocationInfo("me", "", "", 37.9, -122.1)
-now = datetime.datetime.now(datetime.timezone.utc)
-night = sun.night(city.observer)
-day = sun.daylight(city.observer)
+# this doesn't save any time on my old Pi
+#	if (ledstate == 'off'):
+#	pipins.set_PWM_dutycycle(pin, 0.0)
+#	sys.exit()
+	
+a = Astral()
+location = a[mylocation]
+now = datetime.now(mytz)
+sun = location.sun(local=True, date = now)
+sunset = sun['sunset']
+sunrise = sun['sunrise']
 
-print (night)
-print (day)
+print ("SET: ",sunset)
+print ("RISE: ",sunrise)
 
-
-if ((now > day[0]) and (now < day[1])):
-    print ("DAYLIGHT")
+if (now > sunrise and now < sunset):
+    print ("DAY")
     pipins.set_PWM_dutycycle(pin, 255 * 1.0* onoff[ledstate])
-if ((now > night[0]) and (now < night[1])):
+else:
     print ("NIGHT")
-    pipins.set_PWM_dutycycle(pin, 255 * 0.2 * onoff[ledstate])
+    pipins.set_PWM_dutycycle(pin, 255 * 0.1 * onoff[ledstate])
+
+
